@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import InterviewCard from "@/components/InterviewCard";
 
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import {
     getInterviewsByUserId,
@@ -12,14 +13,15 @@ import {
 
 async function Home() {
     const user = await getCurrentUser();
+    if (!user) redirect("/sign-in");
 
     const [userInterviews, allInterview] = await Promise.all([
-        getInterviewsByUserId(user?.id!),
-        getLatestInterviews({ userId: user?.id! }),
+        getInterviewsByUserId(user.id),
+        getLatestInterviews({ userId: user.id }),
     ]);
 
-    const hasPastInterviews = userInterviews?.length! > 0;
-    const hasUpcomingInterviews = allInterview?.length! > 0;
+    const hasPastInterviews = (userInterviews?.length ?? 0) > 0;
+    const hasUpcomingInterviews = (allInterview?.length ?? 0) > 0;
 
     return (
         <>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
+import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
 import { interviewer } from "@/constants";
 import { createFeedback } from "@/lib/actions/general.action";
 
@@ -157,7 +158,7 @@ Then generate and provide the questions.`
                 };
 
                 console.log("Starting interview generation with assistant");
-                await vapi.start(assistant as any);
+                await vapi.start(assistant as CreateAssistantDTO);
             } else {
                 // For interview type, use the assistant object
                 console.log("Starting interview with questions:", questions);
