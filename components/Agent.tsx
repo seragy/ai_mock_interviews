@@ -61,9 +61,19 @@ const Agent = ({
             setIsSpeaking(false);
         };
 
-        const onError = (error: Error) => {
-            console.error("VAPI Error:", error);
+        const onError = (error: unknown) => {
+            // VAPI errors are often plain objects, which log as {}.
+            console.error("VAPI Error:", JSON.stringify(error, Object.getOwnPropertyNames(Object(error))));
             setCallStatus(CallStatus.INACTIVE); // Reset status on error
+        };
+
+        // Diagnostics: 2.6.x reports which stage of call setup failed.
+        const onCallStartFailed = (e: unknown) => {
+            console.error("VAPI call-start-failed:", JSON.stringify(e));
+        };
+
+        const onCallStartProgress = (e: unknown) => {
+            console.log("VAPI call-start-progress:", JSON.stringify(e));
         };
 
         vapi.on("call-start", onCallStart);
@@ -72,6 +82,8 @@ const Agent = ({
         vapi.on("speech-start", onSpeechStart);
         vapi.on("speech-end", onSpeechEnd);
         vapi.on("error", onError);
+        vapi.on("call-start-failed", onCallStartFailed);
+        vapi.on("call-start-progress", onCallStartProgress);
 
         return () => {
             vapi.off("call-start", onCallStart);
@@ -80,6 +92,8 @@ const Agent = ({
             vapi.off("speech-start", onSpeechStart);
             vapi.off("speech-end", onSpeechEnd);
             vapi.off("error", onError);
+            vapi.off("call-start-failed", onCallStartFailed);
+            vapi.off("call-start-progress", onCallStartProgress);
         };
     }, []);
 

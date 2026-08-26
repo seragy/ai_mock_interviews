@@ -41,6 +41,20 @@ export const getTechLogos = async (techArray: string[]) => {
     return results;
 };
 
+// Deterministic cover for a given interview, so it never changes between renders.
+// Used as a fallback for interviews saved before coverImage existed.
+export const getInterviewCover = (seed?: string) => {
+    if (!seed) return `/covers${interviewCovers[0]}`;
+
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    }
+
+    return `/covers${interviewCovers[hash % interviewCovers.length]}`;
+};
+
+// Only for picking a cover once, at interview creation time.
 export const getRandomInterviewCover = () => {
     const randomIndex = Math.floor(Math.random() * interviewCovers.length);
     return `/covers${interviewCovers[randomIndex]}`;

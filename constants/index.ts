@@ -99,12 +99,24 @@ export const mappings = {
 
 export const interviewer: CreateAssistantDTO = {
     name: "Interviewer",
+    // Give the candidate room to think. VAPI defaults to waitSeconds 0.4,
+    // which treats any pause longer than ~0.4s as "done speaking".
+    startSpeakingPlan: {
+        waitSeconds: 1.5,
+        smartEndpointingPlan: { provider: "livekit" },
+    },
+    stopSpeakingPlan: {
+        numWords: 3,
+        voiceSeconds: 0.3,
+        backoffSeconds: 1.5,
+    },
     firstMessage:
         "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
     transcriber: {
         provider: "deepgram",
-        model: "nova-2",
-        language: "en",
+        model: "nova-3",
+        language: "en-US",
+        numerals: true,
     },
     voice: {
         provider: "11labs",
@@ -157,33 +169,22 @@ End the conversation on a polite and positive note.
 
 export const feedbackSchema = z.object({
     totalScore: z.number(),
-    categoryScores: z.tuple([
+    // NOTE: must stay an array, not z.tuple. Gemini's response_schema is an
+    // OpenAPI 3.0 subset: tuples serialize `items` as a list and the API
+    // rejects the request with "Proto field is not repeating".
+    categoryScores: z.array(
         z.object({
-            name: z.literal("Communication Skills"),
+            name: z.enum([
+                "Communication Skills",
+                "Technical Knowledge",
+                "Problem Solving",
+                "Cultural Fit",
+                "Confidence and Clarity",
+            ]),
             score: z.number(),
             comment: z.string(),
-        }),
-        z.object({
-            name: z.literal("Technical Knowledge"),
-            score: z.number(),
-            comment: z.string(),
-        }),
-        z.object({
-            name: z.literal("Problem Solving"),
-            score: z.number(),
-            comment: z.string(),
-        }),
-        z.object({
-            name: z.literal("Cultural Fit"),
-            score: z.number(),
-            comment: z.string(),
-        }),
-        z.object({
-            name: z.literal("Confidence and Clarity"),
-            score: z.number(),
-            comment: z.string(),
-        }),
-    ]),
+        })
+    ),
     strengths: z.array(z.string()),
     areasForImprovement: z.array(z.string()),
     finalAssessment: z.string(),
